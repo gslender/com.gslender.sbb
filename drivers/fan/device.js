@@ -23,7 +23,7 @@ class FanDevice extends Device {
 
     if (this.bond.isIpAddressValid() && this.bond.isTokenValid()) {
       const response = await this.driver.checkSettings(this.getSetting('ipAddress'), this.getSetting('token'));
-      if (response.status != Bond.VALID_TOKEN) {
+      if (response.status === Bond.VALID_TOKEN) {
 
         await this.initialize();
 
@@ -37,6 +37,10 @@ class FanDevice extends Device {
         this.pollingId = this.homey.setInterval(async () => {
           await this.getDeviceState();
         }, 10000);
+        await this.setAvailable();
+      } else {
+        this.log(`FanDevice initialization skipped due to invalid settings status=${response.status}`);
+        await this.setUnavailable(response.status || 'INVALID SETTINGS');
       }
     }
   }
